@@ -58,6 +58,13 @@ import com.netflix.ribbon.Ribbon;
  * @author Dave Syer
  * @author Biju Kunjummen
  */
+/**
+白初心iceu  明确说明了 这个RibbonAutoConfiguration 必须在之前看的那个 {@link LoadBalancerAutoConfigutation}
+ 之前执行 LoadBalancerAUtoConfiguration触发的一系列代码依赖LoadbalancerClient
+ LoadbalancerClient  初始化在RibbonAutoConfiguration
+ 所以RibbonAutoConfiguration先执行
+
+*/
 @Configuration
 @ConditionalOnClass({ IClient.class, RestTemplate.class, AsyncRestTemplate.class, Ribbon.class})
 @RibbonClients
@@ -83,7 +90,9 @@ public class RibbonAutoConfiguration {
 		factory.setConfigurations(this.configurations);
 		return factory;
 	}
-
+  /**
+  白初心iceu 找到了 LoadBalancerClient 初始化一个bean
+  */
 	@Bean
 	@ConditionalOnMissingBean(LoadBalancerClient.class)
 	public LoadBalancerClient loadBalancerClient() {

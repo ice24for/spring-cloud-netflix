@@ -35,6 +35,9 @@ import com.netflix.loadbalancer.Server;
  * @author Dave Syer
  * @author Ryan Baxter
  */
+/**
+白初心iceu 终于找到LoadBalancerClient
+*/
 public class RibbonLoadBalancerClient implements LoadBalancerClient {
 
 	private SpringClientFactory clientFactory;
