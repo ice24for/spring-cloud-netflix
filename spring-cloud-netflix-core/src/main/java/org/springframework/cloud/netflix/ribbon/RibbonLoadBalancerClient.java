@@ -70,6 +70,10 @@ public class RibbonLoadBalancerClient implements LoadBalancerClient {
 				serverIntrospector(serviceId).getMetadata(server));
 	}
 
+	/**
+	白初心iceu 服务名称 通过这个服务名称 获取了一个ILoadBalancer ribbon的核心api和组件
+	 负载均衡器 是ribbon的原生api
+	*/
 	@Override
 	public <T> T execute(String serviceId, LoadBalancerRequest<T> request) throws IOException {
 		ILoadBalancer loadBalancer = getLoadBalancer(serviceId);

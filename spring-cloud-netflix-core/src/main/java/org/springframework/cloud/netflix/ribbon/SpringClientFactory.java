@@ -35,6 +35,14 @@ import com.netflix.loadbalancer.ILoadBalancer;
  * @author Spencer Gibb
  * @author Dave Syer
  */
+/**
+2018/8/18:58白初心iceu
+ 对spring进行了封装 从spring里面获取bean的入口 都变成了这个
+ 对每一个服务 都对应着服务名称  都对应着spring的一个applicationContext 容器
+ ServiceAble对应着自己的独立的一个spring容器
+ 如果要获取ServiceA服务的LoadBalancer  那么就从ServiceAble服务对应的自己的ApplicationContext
+ 容器中去获取自己的LoadBalancer即可
+*/
 public class SpringClientFactory extends NamedContextFactory<RibbonClientSpecification> {
 
 	static final String NAMESPACE = "ribbon";
@@ -55,6 +63,9 @@ public class SpringClientFactory extends NamedContextFactory<RibbonClientSpecifi
 	 * Get the load balancer associated with the name.
 	 * @throws RuntimeException if any error occurs
 	 */
+	/**
+	白初心iceu 通过SpringClientFactory来获取对应的LoadBalancer
+	*/
 	public ILoadBalancer getLoadBalancer(String name) {
 		return getInstance(name, ILoadBalancer.class);
 	}
