@@ -97,6 +97,10 @@ public class EurekaRibbonClientConfiguration {
 		return ping;
 	}
 
+
+	/**
+	2018/8/2-8:23白初心iceu
+	*/
 	@Bean
 	@ConditionalOnMissingBean
 	public ServerList<?> ribbonServerList(IClientConfig config, Provider<EurekaClient> eurekaClientProvider) {

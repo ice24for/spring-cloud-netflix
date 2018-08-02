@@ -42,6 +42,9 @@ import com.netflix.loadbalancer.ILoadBalancer;
  ServiceAble对应着自己的独立的一个spring容器
  如果要获取ServiceA服务的LoadBalancer  那么就从ServiceAble服务对应的自己的ApplicationContext
  容器中去获取自己的LoadBalancer即可
+
+ 在SpringClientFactory 一个服务 比如serviceAble 对应着一个独立的ApplicationContext 里面包含了
+ 自己这个服务的独立的一堆组件 比如Loadbalancer
 */
 public class SpringClientFactory extends NamedContextFactory<RibbonClientSpecification> {
 
@@ -65,6 +68,8 @@ public class SpringClientFactory extends NamedContextFactory<RibbonClientSpecifi
 	 */
 	/**
 	白初心iceu 通过SpringClientFactory来获取对应的LoadBalancer
+	 如果要获取LoadBalancer 只要在自己的SpringAppliactiponContext中获取
+	 根据LoadBalancer接口的类型即可
 	*/
 	public ILoadBalancer getLoadBalancer(String name) {
 		return getInstance(name, ILoadBalancer.class);
@@ -115,7 +120,9 @@ public class SpringClientFactory extends NamedContextFactory<RibbonClientSpecifi
 		
 		return result;
 	}
-
+  /**
+  2018/8/1 22:24白初心iceu 通过SpringClientFactory来获取对应的LoadBalancer @{link} RibbonClientConfiguration
+  */
 	@Override
 	public <C> C getInstance(String name, Class<C> type) {
 		C instance = super.getInstance(name, type);

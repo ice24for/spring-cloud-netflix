@@ -111,6 +111,12 @@ public class RibbonClientConfiguration {
 		return new DummyPing();
 	}
 
+
+	/**
+	2018/8/2-7:44白初心iceu
+
+	 ConfigurationBasedServerList =>Serverlist
+	*/
 	@Bean
 	@ConditionalOnMissingBean
 	@SuppressWarnings("unchecked")
@@ -118,6 +124,25 @@ public class RibbonClientConfiguration {
 		if (this.propertiesFactory.isSet(ServerList.class, name)) {
 			return this.propertiesFactory.get(ServerList.class, config, name);
 		}
+
+		/**
+		2018/8/2-7:46白初心iceu
+		 @Override
+		 public List<Server> getUpdatedListOfServers() {
+		 String listOfServers = clientConfig.get(CommonClientConfigKey.ListOfServers);
+		 return derive(listOfServers);
+		 }
+		 L看代码 不对 不是我们要找的getUpdatedlistofServers
+		 他是从配置文件中 或者是代码的配置中 读取了一个
+		 ListOfServers 的配置项 如果我们手动配置了一个个serverList
+		 才是走的这个东西 来初始化这个serverList
+
+		 猜测 serverList肯定是从eureka中读取的
+		 应该在Eureka的工程或者相关的代码中去读取
+
+		 RibbonEurekaAutoConfiguration eureka和ribbon进行整合的
+
+		 */
 		ConfigurationBasedServerList serverList = new ConfigurationBasedServerList();
 		serverList.initWithNiwsConfig(config);
 		return serverList;
@@ -129,6 +154,84 @@ public class RibbonClientConfiguration {
 		return new PollingServerListUpdater(config);
 	}
 
+	/**
+	2018/8/1-22:36白初心iceu ILoadBalancer的bean
+	 ZoneAwareLoadBalancer 默认的Balancer
+	 在ZoneAwareLoadBalancer中没有看到有相关的ServerList
+	 跟到 ZoneAwareLoadBalancer的父类 DynamicServerListLoadBalancer
+
+	 ZoneAwareLoadBalancer<T extends Server> extends DynamicServerListLoadBalancer<T>
+
+
+	 public DynamicServerListLoadBalancer(IClientConfig clientConfig, IRule rule, IPing ping,
+	 ServerList<T> serverList, ServerListFilter<T> filter,
+	 ServerListUpdater serverListUpdater) {
+	 super(clientConfig, rule, ping);
+	 this.serverListImpl = serverList;
+	 this.filter = filter;
+	 this.serverListUpdater = serverListUpdater;
+	 if (filter instanceof AbstractServerListFilter) {
+	 ((AbstractServerListFilter) filter).setLoadBalancerStats(getLoadBalancerStats());
+	 }
+	 restOfInit(clientConfig);
+	 }
+
+	 void restOfInit(IClientConfig clientConfig) {
+	 boolean primeConnection = this.isEnablePrimingConnections();
+	 // turn this off to avoid duplicated asynchronous priming done in BaseLoadBalancer.setServerList()
+	 this.setEnablePrimingConnections(false);
+
+	 启用和初始化学习新的server的能力 如果serviceAble有新的实例加进来了 是不是可以在这里感知到那些新加入进来的
+	 服务实例
+	 enableAndInitLearnNewServersFeature();
+
+	 更新服务实例 可能就是在创建ZoneAwareLoadBalancer<实例的时候
+	 通过调用他的父类DynamicServerListLoadBalancer 的的构造函数 调用了restInit犯法
+	 调用了updatelistOfServers()方法 通过这个方法 从eureka client那里获取到ServiceAble的server lisy
+	 updateListOfServers();
+	 if (primeConnection && this.getPrimeConnections() != null) {
+	 this.getPrimeConnections()
+	 .primeConnections(getReachableServers());
+	 }
+	 this.setEnablePrimingConnections(primeConnection);
+	 LOGGER.info("DynamicServerListLoadBalancer for client {} initialized: {}", clientConfig.getClientName(), this.toString());
+	 }
+
+
+
+
+	*/
+
+	/**
+	2018/8/2-7:38白初心iceu
+
+
+	 serverListImpl 去eureka获取服务列表
+	 volatile ServerList<T> serverListImpl;
+
+	 发现是在构造ZoneAwareLoadBalancer的时候从构造函数里面传进来的
+	 那么就得回到RibbonClientConfiguration那儿找一下 传递了什么serverList
+	 本身 是从@bean方法入参传入进来的  在某个XXXAutoConfiguration或者XXXConfiguration里面
+	 实例化了一个serverList的bean 才可以在这里传入进来
+
+
+	 @VisibleForTesting
+	 public void updateListOfServers() {
+	 List<T> servers = new ArrayList<T>();
+	 if (serverListImpl != null) {
+	 servers = serverListImpl.getUpdatedListOfServers();
+	 LOGGER.debug("List of Servers for {} obtained from Discovery client: {}",
+	 getIdentifier(), servers);
+
+	 if (filter != null) {
+	 servers = filter.getFilteredListOfServers(servers);
+	 LOGGER.debug("Filtered List of Servers for {} obtained from Discovery client: {}",
+	 getIdentifier(), servers);
+	 }
+	 }
+	 updateAllServerList(servers);
+	 }
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
